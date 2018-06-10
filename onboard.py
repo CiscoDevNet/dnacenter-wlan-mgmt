@@ -64,11 +64,11 @@ def device_list():
     from dnacsdk.networkDevice import NetworkDevice
     devices = NetworkDevice.get_all(dnacp)
 
-    headers = ["Hostname", "Management IP", "Family"]
+    headers = ["Hostname", "Management IP", "Family","ID"]
     table = list()
 
     for device in devices:
-        tr = [device.hostname, device.managementIpAddress, device.family]
+        tr = [device.hostname, device.managementIpAddress, device.family, device.id]
         table.append(tr)
     try:
         click.echo(tabulate.tabulate(table, headers, tablefmt="fancy_grid"))
@@ -209,7 +209,7 @@ def wireless_vlan_list():
 
         Example command:
 
-            ./onboard.py vlan_list
+            ./onboard.py wireless_vlan_list
 
     """
     click.secho("Retrieving the wireless vlans.")
@@ -253,12 +253,336 @@ def create_wireless_vlan(parameters):
 
     print("Create Status: {}".format(creation))
 
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def delete_wireless_vlan(parameters):
+    """delete a Wireless VLAN
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py wireless_vlan_list
+
+        Example command:
+
+          ./onboard.py delete_wireless_vlan "vlanId=87"
+    """
+    click.secho("Attempting wireless vlan deletion.")
+
+    from dnacsdk.wireless_vlan import Wireless_VLAN
+
+    delete_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    deletion = Wireless_VLAN.delete(dnacp, delete_params = delete_params)
+
+    print("Delete Status: {}".format(deletion))
+
+
+@click.command()
+def site_list():
+    """Retrieve and return sites list.
+
+        Returns the groupNameHierarchy, name, and id of all configured sites.
+
+        Example command:
+
+            ./onboard.py site_list
+
+    """
+    click.secho("Retrieving the sites.")
+
+    from dnacsdk.site import Site
+    sites= Site.get_all(dnacp)
+
+    headers = ["groupNameHierarchy", "name", "id"]
+    table = list()
+
+    for site in sites:
+        tr = [site.groupNameHierarchy, site.name, site.id]
+        table.append(tr)
+    try:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="fancy_grid"))
+    except UnicodeEncodeError:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="grid"))
+
+
+@click.command()
+def profile_list():
+    """Retrieve and return profiles list.
+
+        Returns the interfaceName and vlanId of all configured VLANS.
+
+        Example command:
+
+            ./onboard.py profile_list
+
+    """
+    click.secho("Retrieving the profiles.")
+
+    from dnacsdk.profile import Profile
+    profiles= Profile.get_all(dnacp)
+
+    headers = ["Name", "Namespace", "ID", "Assigned Sites"]
+    table = list()
+
+    for profile in profiles:
+        tr = [profile.name, profile.namespace, profile.id, profile.sites]
+        table.append(tr)
+    try:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="fancy_grid"))
+    except UnicodeEncodeError:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="grid"))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def create_profile(parameters):
+    """create a Profile
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py profile_list
+
+        Example command:
+
+          ./onboard.py create_profile "name=matt" vlanId=87" "interfaceName=Wireless Test"
+    """
+    click.secho("Attempting profile creation.")
+
+    from dnacsdk.profile import Profile
+
+    create_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    creation = Profile.create(dnacp, create_params = create_params)
+
+    print("Create Status: {}".format(creation))
+
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def delete_profile(parameters):
+    """delete a Profile
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py profile_list
+
+        Example command:
+
+          ./onboard.py delete_profile "id=<profile id>"
+    """
+    click.secho("Attempting profile deletion.")
+
+    from dnacsdk.profile import Profile
+
+    delete_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    deletion = Profile.delete(dnacp, delete_params = delete_params)
+
+    print("Delete Status: {}".format(deletion))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def assign_profile_site(parameters):
+    """Assign a site to a profile
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py profile_list
+
+        Example command:
+
+          ./onboard.py assign_profile_site "profileid=<profileid>" "siteid=<siteid>"
+    """
+    click.secho("Attempting profile/site assignment.")
+
+    from dnacsdk.profile import Profile
+
+    assign_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    assignment = Profile.assign(dnacp, assign_params = assign_params)
+
+    print("Assignment Status: {}".format(assignment))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def unassign_profile_site(parameters):
+    """Unassign a site to a profile
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py profile_list
+
+        Example command:
+
+          ./onboard.py unassign_profile_site "profileid=<profileid>" "siteid=<siteid>"
+    """
+    click.secho("Attempting profile/site unassignment.")
+
+    from dnacsdk.profile import Profile
+
+    unassign_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    unassignment = Profile.unassign(dnacp, unassign_params = unassign_params)
+
+    print("Unassignment Status: {}".format(unassignment))
+
+@click.command()
+def wlan_list():
+    """Retrieve and return wlans list.
+
+        Returns the interfaceName and vlanId of all configured VLANS.
+
+        Example command:
+
+            ./onboard.py wlan_list
+
+    """
+    click.secho("Retrieving the wlans.")
+
+    from dnacsdk.wlan import Wlan
+    wlans= Wlan.get_all(dnacp)
+
+    headers = ["SSID", "Key"]
+    table = list()
+
+    for wlan in wlans:
+        tr = [wlan.ssid, wlan.key]
+        table.append(tr)
+    try:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="fancy_grid"))
+    except UnicodeEncodeError:
+        click.echo(tabulate.tabulate(table, headers, tablefmt="grid"))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def create_wlan(parameters):
+    """create a wlan
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py wlan_list
+
+        Example command:
+
+          ./onboard.py create_wlan "name=matt" vlanId=87" "interfaceName=Wireless Test"
+    """
+    click.secho("Attempting wlan creation.")
+
+    from dnacsdk.wlan import Wlan
+
+
+    create_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    creation = Wlan.create(dnacp, create_params = create_params)
+
+    print("Create Status: {}".format(creation))
+
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def delete_wlan(parameters):
+    """delete a wlan
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py wlan_list
+
+        Example command:
+
+          ./onboard.py delete_wlan "id=<wlan id>"
+    """
+    click.secho("Attempting wlan deletion.")
+
+    from dnacsdk.wlan import Wlan
+
+    delete_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    deletion = Wlan.delete(dnacp, delete_params = delete_params)
+
+    print("Delete Status: {}".format(deletion))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def assign_device_site(parameters):
+    """Assign a site to a device
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py device_list
+
+        Example command:
+
+          ./onboard.py assign_device_site "deviceid=<deviceid>" "siteid=<siteid>"
+    """
+    click.secho("Attempting device/site assignment.")
+
+    from dnacsdk.networkDevice import NetworkDevice
+
+    assign_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    assignment = NetworkDevice.assign(dnacp, assign_params = assign_params)
+
+    print("Assignment Status: {}".format(assignment))
+
+@click.command()
+@click.argument("parameters", nargs=-1)
+def unassign_device_site(parameters):
+    """Unassign a site to a device
+
+        Provide all parameters and their values as arguements in the format of: "PARAMTER=VALUE"
+
+        You can find the list of parameters using:
+          ./onboard.py device_list
+
+        Example command:
+
+          ./onboard.py unassign_device_site "deviceid=<deviceid>" "siteid=<siteid>"
+    """
+    click.secho("Attempting device/site unassignment.")
+
+    from dnacsdk.networkDevice import NetworkDevice
+
+    unassign_params = dict([param.split("=", maxsplit=1) for param in parameters])
+
+    # Create VLAN
+    unassignment = NetworkDevice.unassign(dnacp, unassign_params = unassign_params)
+
+    print("Unassignment Status: {}".format(unassignment))
+
 cli.add_command(deploy)
 cli.add_command(device_list)
 cli.add_command(interface_list)
 cli.add_command(template_list)
 cli.add_command(wireless_vlan_list)
 cli.add_command(create_wireless_vlan)
+cli.add_command(delete_wireless_vlan)
+cli.add_command(site_list)
+cli.add_command(profile_list)
+cli.add_command(create_profile)
+cli.add_command(delete_profile)
+cli.add_command(wlan_list)
+cli.add_command(create_wlan)
+cli.add_command(delete_wlan)
+cli.add_command(assign_profile_site)
+cli.add_command(unassign_profile_site)
+cli.add_command(assign_device_site)
+cli.add_command(unassign_device_site)
 
 if __name__ == '__main__':
     cli()

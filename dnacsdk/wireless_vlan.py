@@ -65,15 +65,51 @@ class Wireless_VLAN(object):
                     }
                 ]
 
+        creation = ""
         try:
             creation = \
+            dnacp.post("/api/v1/commonsetting/global/-1?key=interface.info", \
+            body)
+        except Exception as e:
+            creation = e
+            print(e)
+
+
+        return creation
+
+    @classmethod
+    def delete(self, dnacp, delete_params = None):
+        wireless_vlans = self.get_all(dnacp)
+        value = []
+
+        for wireless_vlan in wireless_vlans:
+            if str(wireless_vlan.vlanId) != delete_params["vlanId"]:
+                value.append({"interfaceName":wireless_vlan.interfaceName, \
+                "vlanId":wireless_vlan.vlanId})
+
+
+        body = [
+                    {
+                        "instanceType":"interface",
+                        "namespace":"global",
+                        "type":"interface.setting",
+                        "key":"interface.info",
+                        "value":value,
+                        "groupUuid":"-1",
+                        "inheritedGroupUuid":"",
+                        "inheritedGroupName":""
+                    }
+                ]
+
+        try:
+            deletion = \
             dnacp.post("/api/v1/commonsetting/global/-1?key=interface.info", \
             body)
         except Exception as e:
             print(e)
 
 
-        return creation
+        return deletion
 
     @classmethod
     def task_status(cls, dnacp, taskId):

@@ -66,6 +66,34 @@ class NetworkDevice(object):
         # except:
         #     pass
 
+
+    @classmethod
+    def assign(self, dnacp, assign_params = None):
+        try:
+            body={"networkdevice":[assign_params["deviceid"]]}
+            assignment= \
+            dnacp.post("/api/v1/group" + assign_params["siteid"] + \
+            "/member", body)
+        except Exception as e:
+            assignment = e
+            print(e)
+
+
+        return assignment
+
+    @classmethod
+    def unassign(self, dnacp, unassign_params = None):
+        try:
+            unassignment= \
+            dnacp.delete("/api/v1/group/" + unassign_params["siteid"] + \
+            "/member/" + unassign_params["deviceid"])
+        except Exception as e:
+            unassignment = e
+            print(e)
+
+
+        return unassignment
+
     @property
     def interfaces(self):
         interfaces_property = {}

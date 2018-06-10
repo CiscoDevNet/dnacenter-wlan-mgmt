@@ -141,7 +141,8 @@ class Api(object):
     def delete(self, action, headers=None):
         """Make DELETE request
         """
-        return self.request(util.join_url(self.endpoint, action), 'DELETE', headers=headers or {})
+        http_headers = util.merge_dict(self.headers(), headers or {})
+        return self.request(util.join_url(self.endpoint, action), 'DELETE', headers=http_headers or {})
 
     def request(self, url, method, body=None, headers=None):
         """Make HTTP call, formats response and does error handling. Uses http_call method in API class.
